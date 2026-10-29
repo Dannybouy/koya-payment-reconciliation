@@ -24,14 +24,14 @@ function event(id, status, amount, ts = "2026-09-01T00:00:00Z") {
   return { txn_id: id, status, amount, currency: "NGN", ts };
 }
 
-function check(result, count, code) {
+function check(result, count, code, total) {
   assert.equal(result.status, 0, result.stderr);
-  assert.equal(result.stdout, `Check passed: ${count} successful payments.\nYour code: KOYA-${code}\n`);
+  assert.equal(result.stdout, `Check passed: ${count} successful payments.\nTotal collected: ₦${total}\nYour code: KOYA-${code}\n`);
 }
 
 test("ignores malformed lines and events without a transaction ID", () => {
   check(run(["{broken", "", {}, null, event("", "success", 500),
-    event("paid", "success", 10)], 1), 1, 10);
+    event("paid", "success", 10)], 1), 1, 10, "10.00");
 });
 
 test("uses the latest timestamp, regardless of file order or final status", () => {
@@ -43,12 +43,12 @@ test("uses the latest timestamp, regardless of file order or final status", () =
     event("paid", "success", 30, "2026-09-03T00:00:00Z"),
     event("paid", "failed", 30),
     event("paid", "success", 20, "2026-09-02T00:00:00Z"),
-  ], 1), 1, 30);
+  ], 1), 1, 30, "30.00");
 });
 
 test("parses comma-separated amounts and rounds the final total once", () => {
   check(run([event("a", "success", "1,234.56"),
-    event("b", "success", 10.25), event("c", "success", 10.25)], 3), 3, 1255);
+    event("b", "success", 10.25), event("c", "success", 10.25)], 3), 3, 1255, "1,255.06");
 });
 
 test("preserves the expected-count check", () => {

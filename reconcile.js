@@ -41,5 +41,10 @@ if (count !== expected) {
   console.log("Something in the data isn't being handled the way the README describes.");
 } else {
   console.log(`Check passed: ${count} successful payments.`);
+  const total = (totalKobo / 100).toLocaleString("en-NG", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  console.log(`Total collected: ₦${total}`);
   console.log(`Your code: KOYA-${Math.round(totalKobo / 100)}`);
 }
