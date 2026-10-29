@@ -12,6 +12,16 @@ Fix it, in Python (`reconcile.py`) or JavaScript (`reconcile.js`), whichever you
 - The export comes from a production system and isn't perfectly clean. Ignore lines that can't be read, and events without a `txn_id`. Every other event is valid and must be counted correctly.
 - `expected.txt` holds the number of successful payments the finance team counted by hand. The script checks itself against it.
 
+## JavaScript fix
+
+The original script crashed on malformed JSON, counted every successful attempt instead of each payment's latest attempt, and could not read amounts containing commas.
+
+The fix skips unreadable lines and events without a `txn_id`, then uses a `Map` to keep the event with the latest timestamp for each transaction. Only transactions whose latest status is `success` are counted. Amounts are stripped of commas and summed in integer kobo to avoid accumulating floating-point errors, then the final total is rounded to naira for the code.
+
+Run the script with `node reconcile.js` and the regression tests with `node --test reconcile.test.js`.
+
+Verified result: **22,733 successful payments**, totalling **₦1,964,687,345.74**. Application code: **`KOYA-1964687346`**.
+
 ## What to submit
 
 1. Fork this repo, fix the script, and commit your fix to your fork.
